@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>A new title goes here</title>
+<style>
+  html, body, #viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+  }
+</style>
+
+<link rel="stylesheet" href="https://js.arcgis.com/4.7/esri/css/main.css">
+<script src="https://js.arcgis.com/4.7/"></script>
+
+<script>
+    require([
+    "esri/config",
+    "esri/core/urlUtils",
+    "esri/layers/WebTileLayer",
+    "esri/Map",
+    "esri/Basemap",
+    "esri/views/MapView",
+    "esri/layers/FeatureLayer",
+    "dojo/domReady!"
+    ], function(
+        esriConfig, urlUtils, WebTileLayer, Map, Basemap, MapView, FeatureLayer, CSVLayer)
+        {
+        esriConfig.request.corsEnabledServers.push("a.tile.thunderforest.com", "b.tile.thunderforest.com", 
+        "c.tile.thunderforest.com");
+        var thunderForest = new WebTileLayer ({
+    urlTemplate:"https://{subDomain}.tile.thunderforest.com/landscape/{level}}/{col}}/{row}.png?apikey=abda47c584944cff8f5d32a37a54a8e1", //url varies depending on API Key
+    subDomains: ["a","b","c"]
+});
+    var mybasemap = new Basemap ({
+    baseLayers: [thunderForest]
+});
+    var mymap = new Map ({
+    basemap: mybasemap,
+});
+    var myview = new MapView ({
+    map: mymap,
+    container: "viewDiv",
+    center: [-115.5, 45],
+    extent:{
+         xmin: -101,
+         ymin: 34,
+         xmax: -132,
+         ymax: 49.5,
+         spatialReference: 4326// known id of map coordinate system, gps1984
+         }
+     });
+var counties = new FeatureLayer({
+        portalItem: { // autocasts as new PortalItem()
+          id: "7b25e608411140c990957d9c155ee16b"
+        }
+      });
+
+      mymap.add(counties);
+var cities = new FeatureLayer({
+        portalItem: { // autocasts as new PortalItem()
+          id: "659ae9b62da74aaf94a480517e67a434"
+        }
+        });
+
+        mymap.add(cities);  
+        var roadSystem = new FeatureLayer ({
+url: "https://carto.nationalmap.gov/arcgis/rest/services/transportation/MapServer/7"
+});
+mymap.add(roadSystem);
+});
+
+       
+</script>
+</head>
+<body>
+ 
+
+<div id = "viewDiv"> </div>
+
+
+</body>
+</html>
