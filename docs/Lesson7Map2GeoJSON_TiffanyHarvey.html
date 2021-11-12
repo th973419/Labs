@@ -24,7 +24,7 @@
     "esri/geometry/Point",
     "esri/request",
     "dojo/domReady!"
-  ], function (Map, MapView, FeatureLayer, esriconfig, Point, esrirequest)
+  ], function (Map, MapView, FeatureLayer, esriConfig, Point, esriRequest)
   {
     var mymap = new Map ({
       basemap: "dark-gray"
@@ -160,7 +160,7 @@
         .then(createLayer)
       });
       function getData(){
-        var url = "datafiles/all_month.geojson.json";
+        var url = "all_month.geojson.json";
         return esriRequest(url,{
           responsiveType:"json"
         });
