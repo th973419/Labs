@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>A new title goes here</title>
+<style>
+  html, body, #viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+  }
+</style>
+<link rel="stylesheet" href="https://js.arcgis.com/4.21/esri/css/main.css">
+<script src="https://js.arcgis.com/4.21/"></script>
+<script>
+  require ([
+    "esri/Map",
+    "esri/views/MapView",
+    "esri/layers/FeatureLayer",
+    "esri/symbols/SimpleFillSymbol",
+    "esri/renderers/SimpleRenderer",
+    "esri/symbols/SimpleLineSymbol",
+    "esri/config",
+    "esri/layers/CSVLayer"
+  ], function (Map, MapView, FeatureLayer, SimpleFillSymbol, SimpleRenderer, SimpleLineSymbol, esriConfig, CSVLayer)
+  {
+    var myMap = new Map ({
+      basemap: "topo"
+    });
+
+    var myView = new MapView ({
+      map: myMap,
+      center: [-119.509444, 37.229722],
+      container: "viewDiv",
+      scale: 8500000
+    });
+    var cntSym = new SimpleFillSymbol ({
+      color: "#ffece6",
+      style: "solid",
+      width: 2,
+      outline: {
+        style: "dash",
+        color: "black"
+      }
+    });
+    var cntRenderer = new SimpleRenderer ({
+      symbol: cntSym
+    });
+     var counties = new FeatureLayer ({
+       url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/13",
+       renderer: cntRenderer,
+       opacity: 0.7,
+     });
+     myMap.add(counties)
+
+     var stSym = new SimpleFillSymbol ({
+       style: "solid",
+       width: 2,
+       outline: {
+         style: "solid",
+         color:"black"
+       }
+     });
+     var stRenderer = new SimpleRenderer ({
+       symbol: stSym
+     });
+
+     var states = new FeatureLayer ({
+       url: "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/12",
+       renderer: stRenderer,
+       opacity: 0.5
+     });
+     myMap.add(states)
+
+     function createSymbol (color) {
+       return {
+         type: "simple-fill",
+         color: color,
+         outline: {
+           width: 0.5,
+           color: [255, 255, 255, 0.4]
+         },
+         style: "solid"
+        };
+      }
+    var renderer = {
+      type: "class-breaks",
+      field: "POP100",
+      normalizationType: "percent-of-total",
+      normalizationTotal: 37253956,
+      classBreakInfos: [{
+        minValue: 0,
+        maxValue: 0.5,
+        symbol: createSymbol ("#fef0d9"),
+        label: "0- 0.5%"
+      }, {
+        minValue: 0.59,
+        maxValue: 1.5,
+        symbol: createSymbol("#fdcc8a"),
+        label: "0.59, 1.38%",
+
+      },{
+        minValue: 1.8,
+        maxValue: 4.1,
+        symbol: createSymbol ("#fc8d59"),
+        label: "1.83 - 4.05%"
+      }, {
+        minValue: 4.7,
+        maxValue: 8.32,
+        symbol: createSymbol ("#e34a33"),
+        label: "4.78- 8.31%"
+      }, {
+        minValue: 8.32,
+        maxValue: 27,
+        symbol: createSymbol ("#b30000"),
+        label: "8.32 -26.3558%"
+      }]
+    };
+
+     var counties2 = new FeatureLayer ({
+       url: "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2020/State_County/MapServer/31",
+       definitionExpression: "STATE = 06",
+       renderer:renderer
+     })
+
+     myMap.add(counties2);
+
+    var hwySym = new SimpleLineSymbol ({
+      color: "#992900",
+      style: "solid",
+      width: 2,
+      opacity: 0.5
+    });
+    var hwyRenderer = new SimpleRenderer ({
+      symbol: hwySym
+    });
+    var highways = new FeatureLayer ({
+      url: "https://carto.nationalmap.gov/arcgis/rest/services/transportation/MapServer/7",
+      renderer: hwyRenderer
+    });
+    myMap.add(highways);
+    
+    var url = "https://dl.dropboxusercontent.com/s/gulp6lul8dpb3xw/all_day.csv?dl=0";
+
+    esriConfig.request.corsEnabledServers.push(url);
+     
+    var template = {
+      title: "Earthquake Info",
+      content: "Magnitude {mag} {type} hit {place} on {time}"
+    };
+    var usgsFeed = new CSVLayer ({
+      url: url,
+      copyright: "USGS Earthquakes",
+      popupTemplate: template
+    });
+    usgsFeed.renderer= {
+      type: "simple", //outcast a new "SimpleRenderer"
+      symbol: {
+        type: "simple-marker",
+        color: [238, 69, 0, 0.75],
+        size: 10,
+        outline: {
+          width: 0.5,
+          color: "white"
+        }
+      },
+      visualVariables: [
+        {
+          type: "size",
+          field: "mag",
+          valueUnit: "unknown",
+          minDataValue: -0.6,
+          maxDataValue: 5.6,
+          minSize: {
+            type: "size",
+            valueExpression: "$view.scale",
+            stops: [
+              {
+                value: 1100,
+                size: 12
+              },{
+                value: 36000,
+                size: 8
+              },{
+                value: 9000000,
+                size: 6
+              },{
+                value: 75000000,
+                size: 4
+              },{
+                value: 60000000,
+                size: 2
+              }, {
+              }
+            ]
+          },
+          maxSize: {
+            type: "size",
+            valueExpression: "$view.scale",
+            stops: [
+              {
+                value: 1100,
+                size: 80
+              }, {
+                value: 36000,
+                size: 60
+              }, {
+                value: 9000000,
+                size: 50
+              }, {
+                value: 75000000,
+                size: 50
+              }, {
+                value: 60000000,
+                size: 25
+              }
+            ]
+          }
+        }]
+    };
+    myMap.add(usgsFeed);
+  });
+
+</script>
+</head>
+<body>
+<div id = "viewDiv"> </div>
+</body>
+</html>
